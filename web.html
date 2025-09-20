@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Automatic Trash Segregation – Smart Bins</title>
+
+  <!-- PWA manifest and icons -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="apple-touch-icon" href="icons/icon-256.png" />
+
+  <link rel="stylesheet" href="web.css" />
+</head>
+<body>
+  <!-- Sidebar Overlay -->
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <!-- AUTH -->
+  <section id="auth">
+    <div class="auth-card">
+      <div class="auth-hero">
+        <span class="tag">♻️ Smart Segregation</span>
+        <h1>Track bin capacity, earn eco-points, and keep your campus clean.</h1>
+        <p class="muted">Login or create an account to see real-time bin status, solar battery levels, last collection times, a simple map, and a points store.</p>
+        <div class="metric">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/>
+          </svg> Live capacity estimates</div>
+        <div class="metric">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M3 4a1 1 0 0 1 1-1h4l1-1h6l1 1h4a1 1 0 0 1 1 1v17a1 1 0 0 1-1-1H4a1 1 0 0 1-1-1z"/>
+            <path d="M16 2v4"/>
+            <path d="M8 2v4"/>
+          </svg> Last collection history</div>
+        <div class="metric">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 12V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v5M21 12v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5M21 12H3"/>
+          </svg> Solar battery monitoring</div>
+        <div class="metric">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 1v22M3 12h18"/>
+          </svg> Earn & redeem eco-points</div>
+      </div>
+      <div class="auth-form">
+        <h2 id="authTitle">Login</h2>
+        <div class="field">
+          <label>Username</label>
+          <input id="authUser" type="text" placeholder="e.g. eco_warrior or staff" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="authPass" type="password" placeholder="••••••••" />
+        </div>
+        <div class="row">
+          <button id="authSubmit" class="btn primary" style="flex:1">Login</button>
+          <button id="authToggle" class="btn ghost">Create account</button>
+        </div>
+        <p class="smalltext auth-hint">Staff Login: username "staff", password "staff123"</p>
+        <p id="authMsg" class="smalltext" style="margin-top:.75rem"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <section id="app" class="hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo"><div class="mark">♻️</div> CTU Danao Smart Bins</div>
+        <button id="sidebarClose" class="sidebar-close">×</button>
+      </div>
+      <div class="user-card">
+        <div style="font-weight:700" id="sideUser">—</div>
+        <div class="user-type" id="sideUserType">Regular User</div>
+        <div class="points">Points: <span id="sidePoints">0</span></div>
+      </div>
+      <nav>
+        <a data-tab="dashboard" class="nav-btn active">🏠 Dashboard</a>
+        <a data-tab="map" class="nav-btn">🗺️ Trash Bins Map</a>
+        <a data-tab="store" class="nav-btn">🛍️ Points Store</a>
+        <a data-tab="profile" class="nav-btn">👤 Profile</a>
+        <div class="spacer"></div>
+        <a id="installSideBtn" class="nav-btn" style="display:none" href="#">📲 Install App</a>
+        <a id="logout" class="nav-btn" href="#">🚪 Logout</a>
+      </nav>
+    </aside>
+
+    <div class="main-content">
+      <header class="top">
+        <div class="header-left">
+          <button id="sidebarToggle" class="sidebar-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <span class="chip">User: <strong id="topUser" style="margin-left:.35rem">—</strong></span>
+          <span class="chip staff-badge" id="topStaffBadge" style="display: none;">👨‍💼 Staff</span>
+        </div>
+        <div class="row" style="gap:.5rem">
+          <span class="chip">Eco-Points: <strong id="topPoints" style="margin-left:.35rem">0</strong></span>
+          <button id="installBtn" class="btn primary install-btn" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Install App
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <!-- DASHBOARD TAB -->
+        <div id="tab-dashboard" class="tab active">
+          <div class="grid cards" id="binsGrid"></div>
+        </div>
+
+        <!-- MAP TAB -->
+        <div id="tab-map" class="tab">
+          <div class="card">
+            <h3 style="margin:0 0 .5rem">Nearby Bins</h3>
+            <p class="smalltext">CEBU TECHNOLOGICAL UNIVERSITY DANAO CAMPUS MAP</p>
+            
+            <!-- Desktop Map -->
+            <div class="map desktop-map" id="desktopMap"></div>
+            
+            <!-- Mobile Map -->
+            <div class="map mobile-map" id="mobileMap"></div>
+          </div>
+        </div>
+
+        <!-- STORE TAB -->
+        <div id="tab-store" class="tab">
+          <div class="card">
+            <div class="row-between" style="margin-bottom:.5rem">
+              <h3 style="margin:0">Redeem Rewards</h3>
+              <span class="chip">Your Points: <strong id="storePoints" style="margin-left:.35rem">0</strong></span>
+            </div>
+            <div class="store-grid" id="storeGrid"></div>
+          </div>
+        </div>
+
+        <!-- PROFILE TAB -->
+        <div id="tab-profile" class="tab">
+          <div class="card">
+            <h3 style="margin:0 0 .75rem">Profile & System Controls</h3>
+            <div class="grid" style="grid-template-columns: repeat(2, minmax(0,1fr)); gap:1rem">
+              <div>
+                <div class="field">
+                  <label>Username</label>
+                  <input id="profUser" type="text" />
+                </div>
+                <div class="field" id="passwordField">
+                  <label>Change Password</label>
+                  <input id="profPass" type="password" placeholder="New password (optional)" />
+                </div>
+                <button id="saveProfile" class="btn primary">Save Profile</button>
+                <p id="profMsg" class="smalltext" style="margin-top:.75rem"></p>
+              </div>
+              <div>
+                <div class="field">
+                  <label>Simulate Garbage Collection</label>
+                  <input id="collectTime" type="datetime-local" />
+                
+                <!-- Staff Only Controls -->
+                <div id="staffControls" style="margin-top: 1rem; display: none;">
+                  <h4 style="color: var(--brand); margin-bottom: .5rem;">👨‍💼 Staff Management</h4>
+                  <div class="row" style="gap:.5rem; margin-bottom:.5rem">
+                    <button class="btn staff-btn" onclick="clearAllBins()">Clear All Bins</button>
+                    <button class="btn staff-btn" onclick="chargeAllBatteries()">Charge All Batteries</button>
+                  </div>
+                  <div class="row" style="gap:.5rem">
+                    <button class="btn staff-btn" onclick="resetSystem()">Reset System</button>
+                    <button class="btn staff-btn" onclick="generateReport()">Generate Report</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <script src="web.js"></script>
+</body>
+</html>
