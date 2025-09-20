@@ -529,7 +529,7 @@ main {
   display: block;
 }
 
-/* Store */
+/* Store styling changes */
 .store-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -538,10 +538,50 @@ main {
 
 .store-item {
   grid-column: span 4;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
 }
 
 .store-item .title {
   font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.store-item .cost {
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+/* Adjust store grid for tablets */
+@media (max-width: 980px) {
+  .store-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  
+  .store-item {
+    grid-column: span 3;
+  }
+}
+
+/* Adjust store grid for mobile */
+@media (max-width: 560px) {
+  .store-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  .store-item {
+    grid-column: span 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+  }
+  
+  .store-item .btn {
+    min-width: 100px;
+  }
 }
 
 /* Map - Base styling */
